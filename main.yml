@@ -1,0 +1,57 @@
+---
+
+- name: Nested 
+  hosts: localhost
+#  hosts: all
+  gather_facts: true
+  collections:
+    - community.general
+
+  vars:
+    removeocp: false
+    sds: false
+    buildocp: false
+    server_list:
+      - server1:
+        apivips: 10.10.10.145
+        ingressvips: 10.10.10.146
+        metadataname: jimb0-test 
+      - server2:
+        apivips: 10.10.10.147
+        ingressvips: 10.10.10.148
+        metadataname: jimb0-test1 
+      - server3:
+        apivips: 10.10.10.149
+        ingressvips: 10.10.10.150
+        metadataname: jimb0-test2
+      - server4:
+        apivips: 10.10.10.151
+        ingressvips: 10.10.10.152
+        metadataname: jimb0-test3
+#      - server5:
+#        apivips: 10.10.10.153
+#        ingressvips: 10.10.10.154
+#        metadataname: jimb0-test4
+#      - server6:
+#        apivips: 10.10.10.155
+#        ingressvips: 10.10.10.156
+#        metadataname: jimb0-test5
+
+  tasks:
+
+
+    - name: Include vars of vcenter_host.yml
+      ansible.builtin.include_vars:
+        file: vcenter_host.yml
+        name: vcenter
+
+    - name: Include vars of secrets.yml
+      ansible.builtin.include_vars:
+        file: secrets.yml
+        name: secrets
+
+    - block:
+       - name: configure ocp
+         include_tasks: ocpconfig.yml
+         loop: "{{ server_list }}"
+

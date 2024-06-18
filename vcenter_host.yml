@@ -1,0 +1,16 @@
+vc_fact_ip: "10."
+vc_fact_hostname: "nested7-vcenter"
+vc_fact_domain: "vsphere.local"
+vc_fact_nameserver: '["10."]'
+man_fact_nameserver: ["10."]
+vc_fact_gateway: "10."
+vc_fact_netmask: "255.255.255."
+vc_fact_ntp: "10."
+vc_fact_password: ""
+vc_fact_datacenter: "nested7-datacenter"
+vc_fact_cluster: "/nested7-datacenter/host/nested7-cluster"
+vc_fact_deployment_network: "VM Network"
+vc_fact_datastore: "/nested7-datacenter/datastore/fs-cicluster-nfs"
+vc_fact_resourcepool: "/nested7-datacenter/host/nested7-cluster/Resources"
+vc_fact_base_domain: "vmc.devcluster.openshift.com"
+

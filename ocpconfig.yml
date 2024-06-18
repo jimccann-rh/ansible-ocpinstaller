@@ -1,0 +1,44 @@
+- name: debug
+  debug:
+    msg: '{{ server_list }}'
+
+- name: Loop through servers in server_list
+  debug:
+    msg: "ITEM name {{ item }} ingress vips - {{ item.ingressvips }}, api vips - {{ item.apivips }}, metadata name - {{ item.metadataname }}"
+
+- name: build ocp
+  block:
+    - name: Creates directory
+      ansible.builtin.file:
+        path: '{{ item.metadataname }}'
+        state: directory
+
+    - name: Template files
+      ansible.builtin.template:
+        src: 'install-config-backup-dev.j2'
+        dest: '{{ item.metadataname }}/install-config.yaml'
+
+    #- pause:
+
+    - name: This command will change the working dir install ocp
+      ansible.builtin.shell: ../../openshift-install create cluster --log-level debug
+      register: ocprun
+      args:
+        chdir: '{{ item.metadataname }}/'
+        creates: '.openshift_install.log'
+#      failed_when: ocprun != "Install complete!"
+
+  when: buildocp | bool
+
+- name: sleep data sleep
+  pause:
+    seconds: 3600
+  when: sds | bool
+
+- name: This command will change the working dir remove ocp
+  ansible.builtin.shell: ../../openshift-install destroy cluster
+  register: ocpdes
+  args:
+    chdir: '{{ item.metadataname }}/'
+  when: removeocp | bool
+

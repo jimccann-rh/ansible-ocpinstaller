@@ -1,0 +1,56 @@
+additionalTrustBundlePolicy: Proxyonly
+apiVersion: v1
+baseDomain: {{ vcenter.vc_fact_base_domain }}
+compute:
+- architecture: amd64
+  hyperthreading: Enabled
+  name: worker
+  platform: {}
+  replicas: 3
+controlPlane:
+  architecture: amd64
+  hyperthreading: Enabled
+  name: master
+  platform: {}
+  replicas: 3
+metadata:
+  creationTimestamp: null
+  name: {{ item.metadataname }}
+networking:
+  clusterNetwork:
+  - cidr: 10.128.0.0/14
+    hostPrefix: 23
+  machineNetwork:
+  - cidr: 10.0.0.0/16
+  networkType: OVNKubernetes
+  serviceNetwork:
+  - 172.30.0.0/16
+platform:
+  vsphere:
+    apiVIPs:
+    - {{ item.apivips }}
+    failureDomains:
+    - name: generated-failure-domain
+      region: generated-region
+      server: {{ vcenter.vc_fact_ip }} 
+      topology:
+        computeCluster: {{ vcenter.vc_fact_cluster }}
+        datacenter: {{ vcenter.vc_fact_datacenter }}
+        datastore: {{ vcenter.vc_fact_datastore }}
+        networks:
+        - {{ vcenter.vc_fact_deployment_network }} 
+        resourcePool: {{ vcenter.vc_fact_resourcepool }}
+      zone: generated-zone
+    ingressVIPs:
+    - {{ item.ingressvips }}
+    vcenters:
+    - datacenters:
+      - {{ vcenter.vc_fact_datacenter }}
+      password: {{ vcenter.vc_fact_password }}
+      port: 443
+      server: {{ vcenter.vc_fact_ip }}
+      user: administrator@{{ vcenter.vc_fact_domain }}
+publish: External
+pullSecret: '{{ secrets.pullSecret }}'
+sshKey: |
+  {{ secrets.sshKey }}
