@@ -46,5 +46,5 @@
   register: ocpdes
   args:
     chdir: '{{ item.metadataname }}/'
-  when: removeocp | bool and stat_dir | bool
+  when: removeocp | bool and stat_dir.stat.exists | bool
 
