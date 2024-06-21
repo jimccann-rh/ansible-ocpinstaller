@@ -38,7 +38,7 @@
 
 - name: Does terraform configs exist
   stat:
-    path: '{{ item.metadataname }}/terraform'
+    path: '{{ item.metadataname }}/terraform.master.tfstate'
   register: stat_dir
 
 - name: This command will change the working dir remove ocp
