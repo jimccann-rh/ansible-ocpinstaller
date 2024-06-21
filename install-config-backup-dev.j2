@@ -27,6 +27,7 @@ networking:
   - 172.30.0.0/16
 platform:
   vsphere:
+    diskType: thin
     apiVIPs:
     - {{ item.apivips }}
     failureDomains:
