@@ -32,13 +32,19 @@
 
 - name: sleep data sleep
   pause:
-    seconds: 3600
+    seconds: 7200
   when: sds | bool
+
+
+- name: Does terraform configs exist
+  stat:
+    path: '{{ item.metadataname }}/terraform'
+  register: stat_dir
 
 - name: This command will change the working dir remove ocp
   ansible.builtin.shell: ../../openshift-install destroy cluster
   register: ocpdes
   args:
     chdir: '{{ item.metadataname }}/'
-  when: removeocp | bool
+  when: removeocp | bool and stat_dir | bool
 
