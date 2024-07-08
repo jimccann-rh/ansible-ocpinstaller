@@ -1,6 +1,8 @@
 additionalTrustBundlePolicy: Proxyonly
 apiVersion: v1
 baseDomain: {{ vcenter.vc_fact_base_domain }}
+additionalTrustBundle: |  
+  {{ cert |indent(2) }}
 compute:
 - architecture: amd64
   hyperthreading: Enabled
@@ -33,7 +35,7 @@ platform:
     failureDomains:
     - name: generated-failure-domain
       region: generated-region
-      server: {{ vcenter.vc_fact_ip }} 
+      server: {{ vcenter.vc_fact_hostname }}.{{ vcenter.vc_fact_domain }} 
       topology:
         computeCluster: {{ vcenter.vc_fact_cluster }}
         datacenter: {{ vcenter.vc_fact_datacenter }}
@@ -49,7 +51,7 @@ platform:
       - {{ vcenter.vc_fact_datacenter }}
       password: {{ vcenter.vc_fact_password }}
       port: 443
-      server: {{ vcenter.vc_fact_ip }}
+      server: {{ vcenter.vc_fact_hostname }}.{{ vcenter.vc_fact_domain }}
       user: administrator@{{ vcenter.vc_fact_domain }}
 publish: External
 pullSecret: '{{ secrets.pullSecret }}'

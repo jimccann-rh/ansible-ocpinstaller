@@ -6,45 +6,102 @@
   debug:
     msg: "ITEM name {{ item }} ingress vips - {{ item.ingressvips }}, api vips - {{ item.apivips }}, metadata name - {{ item.metadataname }}"
 
-- name: build ocp
-  block:
-    - name: Creates directory
-      ansible.builtin.file:
-        path: '{{ item.metadataname }}'
-        state: directory
+- block:
+    - name: "ICMP ping from Control Node to Remote Node {{ item.apivips }} is alive"
+      delegate_to: localhost # or controlnode.example.com
+      command: ping -c 2 "{{ item.apivips }}"
+      # Because it is an reporting task
+      changed_when: false 
+      check_mode: false
+      failed_when: router_ping.rc == 0 # will result into fail for rc 0 as IP is alive!
+      #failed_when: router_ping.rc == 1 or router_ping.rc > 2 # will result into success for rc 0 and rc 2
+      register: router_ping
+  
+    - name: Show Return Code
+      debug:
+        msg: "{{ router_ping.rc }}"
 
-    - name: Template files
-      ansible.builtin.template:
-        src: 'install-config-backup-dev.j2'
-        dest: '{{ item.metadataname }}/install-config.yaml'
+    - name: "ICMP ping from Control Node to Remote Node {{ item.ingressvips }} is alive"
+      delegate_to: localhost # or controlnode.example.com
+      command: ping -c 2 "{{ item.ingressvips }}"
+      # Because it is an reporting task
+      changed_when: false
+      check_mode: false
+      failed_when: router_ping.rc == 0 # will result into fail for rc 0 as IP is alive!
+      #failed_when: router_ping.rc == 1 or router_ping.rc > 2 # will result into success for rc 0 and rc 2
+      register: router_ping2
 
-    #- pause:
-
-    - name: This command will change the working dir install ocp
-      ansible.builtin.shell: ../../openshift-install create cluster --log-level debug
-      register: ocprun
+    - name: Show Return Code
+      debug:
+        msg: "{{ router_ping2.rc }}"
+    
+    - name: build ocp
+      block:
+        - name: Creates directory
+          ansible.builtin.file:
+            path: '{{ item.metadataname }}'
+            state: directory
+    
+        - name: Template files
+          ansible.builtin.template:
+            src: 'install-config-backup-dev.j2'
+            dest: '{{ item.metadataname }}/install-config.yaml'
+    
+        - name: This command will change the working dir install ocp
+          ansible.builtin.shell: ../../openshift-install create cluster --log-level debug
+          register: ocprun
+          args:
+            chdir: '{{ item.metadataname }}/'
+            creates: '.openshift_install.log'
+    
+      when: buildocp | bool
+    
+    - name: sleep data sleep
+      pause:
+        seconds: 7200
+      when: sds | bool
+    
+    
+    - name: Does terraform configs exist
+      stat:
+        path: '{{ item.metadataname }}/terraform.master.tfstate'
+      register: stat_dir
+    
+    - name: This command will change the working dir remove ocp
+      ansible.builtin.shell: ../../openshift-install destroy cluster
+      register: ocpdes
       args:
         chdir: '{{ item.metadataname }}/'
-        creates: '.openshift_install.log'
-#      failed_when: ocprun != "Install complete!"
+      when: removeocp | bool and stat_dir.stat.exists | bool
+    
+  rescue:    
+    
+    - name: get install log 
+      ansible.builtin.slurp:
+        src: '{{ item.metadataname }}/.openshift_install.log'
+      register: ocplog
+    
+    - name: set fact user login
+      set_fact:
+        login: "{{ ocplog['content']|b64decode|split('\n')|
+                       select('search', 'password') }}"
+    
+    - name: set fact web console
+      set_fact:
+        web: "{{ ocplog['content']|b64decode|split('\n')|
+                       select('search', 'web-console') }}"
+    
+    - name: set fact KUBECONFIG
+      set_fact:
+        kc: "{{ ocplog['content']|b64decode|split('\n')|
+                       select('search', 'KUBECONFIG') }}"
+    
+    #- debug:
+    #    var: login
+    - debug:
+        msg:
+          - '{{ web }}'
+          - "{{ login }}"
+          - "{{ kc }}"
 
-  when: buildocp | bool
-
-- name: sleep data sleep
-  pause:
-    seconds: 7200
-  when: sds | bool
-
-
-- name: Does terraform configs exist
-  stat:
-    path: '{{ item.metadataname }}/terraform.master.tfstate'
-  register: stat_dir
-
-- name: This command will change the working dir remove ocp
-  ansible.builtin.shell: ../../openshift-install destroy cluster
-  register: ocpdes
-  args:
-    chdir: '{{ item.metadataname }}/'
-  when: removeocp | bool and stat_dir.stat.exists | bool
 

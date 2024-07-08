@@ -1,40 +1,42 @@
 ---
 
-- name: Nested 
+- name: OCP installer
   hosts: localhost
+  connection: local
 #  hosts: all
   gather_facts: true
   collections:
     - community.general
 
   vars:
+    getcert: false
     removeocp: false
     sds: false
     buildocp: false
     server_list:
       - server1:
-        apivips: 10.10.10.145
-        ingressvips: 10.10.10.146
+        apivips: 10.93.60.145
+        ingressvips: 10.93.60.146
         metadataname: jimb0-test 
       - server2:
-        apivips: 10.10.10.147
-        ingressvips: 10.10.10.148
+        apivips: 10.93.60.147
+        ingressvips: 10.93.60.148
         metadataname: jimb0-test1 
-      - server3:
-        apivips: 10.10.10.149
-        ingressvips: 10.10.10.150
-        metadataname: jimb0-test2
-      - server4:
-        apivips: 10.10.10.151
-        ingressvips: 10.10.10.152
-        metadataname: jimb0-test3
+#      - server3:
+#        apivips: 10.93.60.149
+#        ingressvips: 10.93.60.150
+#        metadataname: jimb0-test2
+#      - server4:
+#        apivips: 10.93.60.151
+#        ingressvips: 10.93.60.152
+#        metadataname: jimb0-test3
 #      - server5:
-#        apivips: 10.10.10.153
-#        ingressvips: 10.10.10.154
+#        apivips: 10.93.60.153
+#        ingressvips: 10.93.60.154
 #        metadataname: jimb0-test4
 #      - server6:
-#        apivips: 10.10.10.155
-#        ingressvips: 10.10.10.156
+#        apivips: 10.93.60.155
+#        ingressvips: 10.93.60.156
 #        metadataname: jimb0-test5
 
   tasks:
@@ -49,6 +51,37 @@
       ansible.builtin.include_vars:
         file: secrets.yml
         name: secrets
+
+    - block:
+       - name: get certs
+         ansible.builtin.get_url:
+           url: "https://{{ vcenter.vc_fact_hostname }}.{{ vcenter.vc_fact_domain }}/certs/download.zip"
+           #url: "https://{{ vcenter.vc_fact_ip }}/certs/download.zip"
+           dest: ./download.zip
+           validate_certs: false
+
+       - name: Extract download.zip to /etc/pki/
+         ansible.builtin.unarchive:
+           src: ./download.zip
+           dest: /tmp/
+
+       - name: get files
+         ansible.builtin.find:
+           paths: /tmp/certs/lin/
+           file_type: "file"
+           patterns: "*.0"
+         register: find_result
+
+       - debug:
+           msg: "{{ item.path | basename }}"
+           #msg: "{{ item.path | basename }}"
+         loop: "{{ find_result.files }}"
+
+       - name: get cert into var
+         ansible.builtin.set_fact:
+           cert: "{{ lookup('ansible.builtin.file', '{{ item.path }}') }}"
+         loop: "{{ find_result.files }}"
+      when: getcert
 
     - block:
        - name: configure ocp

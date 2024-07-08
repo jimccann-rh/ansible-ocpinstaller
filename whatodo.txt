@@ -1,15 +1,4 @@
-
-Need to get the openshift-install bin
-Might need to update this code
-ansible.builtin.shell: ../../openshift-install create cluster --log-level debug
-put the pullsecret and ssh key in secret.yml file
-update vcenter_hosts.yml with correct info
-update the main.yml vars section IE server_list 
-
-then run:
- ansible-playbook main.yml --extra-vars buildocp=true
-
-for testing
-
-ansible-playbook main.yml --extra-vars buildocp=true --extra-vars sds=true --extra-vars removeocp=true
-
+ansible-playbook main.yml --extra-var buildocp=true --extra-var getcert=true -K
+ansible-playbook main.yml --extra-var buildocp=true
+ansible-playbook main.yml --extra-var buildocp=true --extra-var removeocp=true --extra-var sds=true
+ansible-playbook main.yml --extra-var buildocp=true --extra-var getcert=true
