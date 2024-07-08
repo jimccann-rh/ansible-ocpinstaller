@@ -56,24 +56,6 @@
     
       when: buildocp | bool
     
-    - name: sleep data sleep
-      pause:
-        seconds: 7200
-      when: sds | bool
-    
-    
-    - name: Does terraform configs exist
-      stat:
-        path: '{{ item.metadataname }}/terraform.master.tfstate'
-      register: stat_dir
-    
-    - name: This command will change the working dir remove ocp
-      ansible.builtin.shell: ../../openshift-install destroy cluster
-      register: ocpdes
-      args:
-        chdir: '{{ item.metadataname }}/'
-      when: removeocp | bool and stat_dir.stat.exists | bool
-
     - name: Does dir configs exist
       stat:
         path: '{{ item.metadataname }}/.openshift_install.log'
@@ -85,7 +67,7 @@
       stat:
         path: '{{ item.metadataname }}/.openshift_install.log'
       register: stat_dir_config
- 
+
   always:
     - block:
        - name: get install log
@@ -117,3 +99,23 @@
              - "{{ kc }}"
 
       when: stat_dir_config.stat.exists | bool
+
+
+    - name: sleep data sleep
+      pause:
+        seconds: 7200
+      when: sds | bool
+
+
+    - name: Does terraform configs exist
+      stat:
+        path: '{{ item.metadataname }}/terraform.master.tfstate'
+      register: stat_dir
+
+    - name: This command will change the working dir remove ocp
+      ansible.builtin.shell: ../../openshift-install destroy cluster
+      register: ocpdes
+      args:
+        chdir: '{{ item.metadataname }}/'
+      when: removeocp | bool and stat_dir.stat.exists | bool
+
