@@ -35,35 +35,6 @@
       debug:
         msg: "{{ router_ping2.rc }}"
 
-#    - name: ansible ping
-#      ping: 
-#      delegate_to: "{{ item.apivips }}"
-#
-#    - name: "check if IP already in use {{ item.apivips }} will fail if in use"
-#      ansible.builtin.wait_for:
-#        port: 22
-#        host: "{{ item.apivips }}" 
-#        timeout: 10
-##        delay: 5
-#        state: started
-#      register: port_check
-#      failed_when: port_check.failed
-#  
-#    - debug:
-#        msg: "{{ port_check }}"
-# 
-#    - name: "check if IP already in use {{ item.ingressvips }} will fail if in use"
-#      ansible.builtin.wait_for:
-#        port: 22
-#        host: "{{ item.ingressvips }}"
-#        timeout: 10
-# #       delay: 5
-#        state: started
-#      register: port_check2
-#      failed_when: port_check2.failed
-#    
-#    - pause:
-    
     - name: build ocp
       block:
         - name: Creates directory
@@ -115,38 +86,6 @@
         path: '{{ item.metadataname }}/.openshift_install.log'
       register: stat_dir_config
  
-#    - pause:
-#        seconds: 1 
-#
-#
-#    - name: get install log 
-#      ansible.builtin.slurp:
-#        src: '{{ item.metadataname }}/.openshift_install.log'
-#      register: ocplog
-#    
-#    - name: set fact user login
-#      set_fact:
-#        login: "{{ ocplog['content']|b64decode|split('\n')|
-#                       select('search', 'password') }}"
-#    
-#    - name: set fact web console
-#      set_fact:
-#        web: "{{ ocplog['content']|b64decode|split('\n')|
-#                       select('search', 'web-console') }}"
-#    
-#    - name: set fact KUBECONFIG
-#      set_fact:
-#        kc: "{{ ocplog['content']|b64decode|split('\n')|
-#                       select('search', 'KUBECONFIG') }}"
-#    
-#    #- debug:
-#    #    var: login
-#    - debug:
-#        msg:
-#          - '{{ web }}'
-#          - "{{ login }}"
-#          - "{{ kc }}"
-
   always:
     - block:
        - name: get install log
