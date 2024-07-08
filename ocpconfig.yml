@@ -34,7 +34,7 @@
     - name: Show Return Code
       debug:
         msg: "{{ router_ping2.rc }}"
-    
+
     - name: build ocp
       block:
         - name: Creates directory
@@ -75,27 +75,32 @@
       when: removeocp | bool and stat_dir.stat.exists | bool
     
   rescue:    
-    
-    - name: get install log 
+   
+    - pause:
+        seconds: 1 
+
+  always:
+
+    - name: get install log
       ansible.builtin.slurp:
         src: '{{ item.metadataname }}/.openshift_install.log'
       register: ocplog
-    
+
     - name: set fact user login
       set_fact:
         login: "{{ ocplog['content']|b64decode|split('\n')|
                        select('search', 'password') }}"
-    
+
     - name: set fact web console
       set_fact:
         web: "{{ ocplog['content']|b64decode|split('\n')|
                        select('search', 'web-console') }}"
-    
+
     - name: set fact KUBECONFIG
       set_fact:
         kc: "{{ ocplog['content']|b64decode|split('\n')|
                        select('search', 'KUBECONFIG') }}"
-    
+
     #- debug:
     #    var: login
     - debug:
@@ -103,5 +108,4 @@
           - '{{ web }}'
           - "{{ login }}"
           - "{{ kc }}"
-
 
