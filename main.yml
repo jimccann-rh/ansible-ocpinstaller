@@ -54,7 +54,6 @@
 
        - debug:
            msg: "{{ item.path | basename }}"
-           #msg: "{{ item.path | basename }}"
          loop: "{{ find_result.files }}"
 
        - name: get cert into var
