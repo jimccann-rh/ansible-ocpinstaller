@@ -2,3 +2,4 @@ ansible-playbook main.yml --extra-var buildocp=true --extra-var getcert=true -K
 ansible-playbook main.yml --extra-var buildocp=true
 ansible-playbook main.yml --extra-var buildocp=true --extra-var removeocp=true --extra-var sds=true
 ansible-playbook main.yml --extra-var buildocp=true --extra-var getcert=true
+ansible-playbook main.yml --extra-var buildocp=true --extra-var getcert=true --extra-var removeocp=true --extra-var sds=true --extra-var cleanup=true 
