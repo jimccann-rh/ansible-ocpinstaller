@@ -13,6 +13,7 @@
     removeocp: false
     sds: false
     buildocp: false
+    cleanup: false
 
   tasks:
 

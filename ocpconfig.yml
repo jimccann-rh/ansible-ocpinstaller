@@ -119,3 +119,9 @@
         chdir: '{{ item.metadataname }}/'
       when: removeocp | bool and stat_dir.stat.exists | bool
 
+- name: remove directory
+  ansible.builtin.file:
+    path: '{{ item.metadataname }}'
+    state: absent
+  when: cleanup | bool  
+
